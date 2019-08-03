@@ -1,8 +1,8 @@
 ﻿namespace Pollr.Server.Common
 {
-    public static class HubMethods
+    public static class HubEvents
     {
         public const string UserJoined = nameof(UserJoined);
-        public const string Increment = nameof(Increment);
+        public const string Count = nameof(Count);
     }
 }

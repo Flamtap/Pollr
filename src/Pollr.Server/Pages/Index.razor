@@ -30,16 +30,16 @@
             .WithUrl("https://localhost:44389/count")
             .Build();
 
-        _connection.On<string>(HubMethods.UserJoined, username =>
+        _connection.On<string>(HubEvents.UserJoined, username =>
         {
-            AddChatMessage($@"{username} has joined");
+            AddChatMessage($@"{username} has joined!");
             StateHasChanged();
         });
 
-        _connection.On<string>(HubMethods.Increment, username =>
+        _connection.On<int>(HubEvents.Count, count =>
         {
-            AddChatMessage($@"{username} incremented from {_currentCount} to {_currentCount + 1}");
-            _currentCount++;
+            AddChatMessage($@"The current count is {count}!");
+            _currentCount = count;
             StateHasChanged();
         });
 
@@ -48,7 +48,7 @@
 
     public Task IncrementCountAsync()
     {
-        return _connection.SendAsync(HubMethods.Increment);
+        return _connection.SendAsync(HubEvents.Count);
     }
 
     private void AddChatMessage(string fullMessage)

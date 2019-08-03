@@ -1,20 +1,32 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Pollr.Server.Common;
+using Pollr.Server.Services;
 
 namespace Pollr.Server.Hubs
 {
     public class CountHub : Hub
     {
-        public override Task OnConnectedAsync()
+        private readonly StateManager _stateManager;
+
+        public CountHub(StateManager stateManager)
         {
-            return Clients.All.SendAsync(HubMethods.UserJoined, Context.ConnectionId);
+            _stateManager = stateManager;
         }
 
-        [HubMethodName(HubMethods.Increment)]
-        public Task Increment()
+        public override async Task OnConnectedAsync()
         {
-            return Clients.All.SendAsync(HubMethods.Increment, Context.ConnectionId);
+            await Clients.All.SendAsync(HubEvents.UserJoined, Context.ConnectionId);
+
+            await Clients.Caller.SendAsync(HubEvents.Count, _stateManager.GetCount());
+        }
+
+        [HubMethodName(HubEvents.Count)]
+        public Task Count()
+        {
+            var newCount = _stateManager.BumpCount();
+
+            return Clients.All.SendAsync(HubEvents.Count, newCount);
         }
     }
 }
