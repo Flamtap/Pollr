@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject HubConnection Connection;
 @using Microsoft.AspNetCore.SignalR.Client
 @using Pollr.Server.Common
 
@@ -21,46 +22,35 @@
 
 @functions
 {
-    private HubConnection _connection;
     private int _currentCount;
 
     private List<string> Messages { get; } = new List<string>();
 
     protected override async void OnInit()
     {
-        _connection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:44389/count")
-            .Build();
-
-        _connection.On<string>(HubEvents.UserJoined, username =>
+        Connection.On<string>(HubEvents.UserJoined, username =>
         {
-            AddChatMessage($@"{username} has joined!");
+            Messages.Add($@"{username} has joined!");
             StateHasChanged();
         });
 
-        _connection.On<int>(HubEvents.Count, count =>
+        Connection.On<int>(HubEvents.Count, count =>
         {
-            AddChatMessage($@"The current count is {count}!");
+            Messages.Add($@"The current count is {count}!");
             _currentCount = count;
             StateHasChanged();
         });
 
-        await _connection.StartAsync();
+        await Connection.StartAsync();
     }
 
     public Task IncrementCountAsync()
     {
-        return _connection.SendAsync(HubEvents.Count);
+        return Connection.SendAsync(HubEvents.Count);
     }
 
     public Task ResetCountAsync()
     {
-        return _connection.SendAsync(HubEvents.Reset);
+        return Connection.SendAsync(HubEvents.Reset);
     }
-
-    private void AddChatMessage(string fullMessage)
-    {
-        Messages.Add(fullMessage);
-    }
-
 }
