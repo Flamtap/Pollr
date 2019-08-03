@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Pollr.Server.Common;
 using Pollr.Server.Hubs;
 using Pollr.Server.Services;
 
@@ -25,10 +26,12 @@ namespace Pollr.Server
 
             services.AddSingleton<StateManager>();
 
-            services.AddTransient(svc => 
+            services.AddScoped(svc => 
                 new HubConnectionBuilder()
                     .WithUrl("https://localhost:44389/count")
+                    .WithAutomaticReconnect()
                     .Build());
+            services.AddScoped<CountHubProxy>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

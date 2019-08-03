@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject HubConnection Connection;
+@inject CountHubProxy CountHubProxy;
 @using Microsoft.AspNetCore.SignalR.Client
 @using Pollr.Server.Common
 
@@ -7,7 +8,7 @@
 
 <p>Current count: @_currentCount</p>
 
-<button class="btn btn-primary" @onclick="@IncrementCountAsync">Start Counting</button>
+<button class="btn btn-primary" @onclick="@BumpCountAsync">Start Counting</button>
 <button class="btn btn-danger" @onclick="@ResetCountAsync">Reset Count</button>
 
 
@@ -28,29 +29,28 @@
 
     protected override async void OnInit()
     {
-        Connection.On<string>(HubEvents.UserJoined, username =>
-        {
-            Messages.Add($@"{username} has joined!");
-            StateHasChanged();
-        });
-
-        Connection.On<int>(HubEvents.Count, count =>
-        {
-            Messages.Add($@"The current count is {count}!");
-            _currentCount = count;
-            StateHasChanged();
-        });
-
-        await Connection.StartAsync();
+        await CountHubProxy.ConnectAsync(UserJoined, CountUpdated);
     }
 
-    public Task IncrementCountAsync()
+    private void CountUpdated(int count)
     {
-        return Connection.SendAsync(HubEvents.Count);
+        Messages.Add($@"The current count is {count}!");
+        _currentCount = count;
+    }
+
+    private void UserJoined(string username)
+    {
+        Messages.Add($@"{username} has joined!");
+        StateHasChanged(); //TODO: Should this really be needed?
+    }
+
+    public Task BumpCountAsync()
+    {
+        return CountHubProxy.BumpCountAsync();
     }
 
     public Task ResetCountAsync()
     {
-        return Connection.SendAsync(HubEvents.Reset);
+        return CountHubProxy.ResetCountAsync();
     }
 }

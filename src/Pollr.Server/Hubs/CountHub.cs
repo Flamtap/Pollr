@@ -5,7 +5,7 @@ using Pollr.Server.Services;
 
 namespace Pollr.Server.Hubs
 {
-    public class CountHub : Hub
+    public class CountHub : Hub<ICountHub>
     {
         private readonly StateManager _stateManager;
 
@@ -16,9 +16,9 @@ namespace Pollr.Server.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync(HubEvents.UserJoined, Context.ConnectionId);
+            await Clients.All.UserJoinedAsync(Context.ConnectionId);
 
-            await Clients.Caller.SendAsync(HubEvents.Count, _stateManager.GetCount());
+            await Clients.Caller.UpdateCountAsync(_stateManager.GetCount());
         }
 
         [HubMethodName(HubEvents.Count)]
@@ -26,7 +26,7 @@ namespace Pollr.Server.Hubs
         {
             var newCount = _stateManager.BumpCount();
 
-            return Clients.All.SendAsync(HubEvents.Count, newCount);
+            return Clients.All.UpdateCountAsync(newCount);
         }
 
         [HubMethodName(HubEvents.Reset)]
@@ -34,7 +34,7 @@ namespace Pollr.Server.Hubs
         {
             var newCount = _stateManager.ResetCount();
 
-            return Clients.All.SendAsync(HubEvents.Count, newCount);
+            return Clients.All.UpdateCountAsync(newCount);
         }
     }
 }
