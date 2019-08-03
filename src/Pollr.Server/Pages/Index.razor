@@ -7,6 +7,8 @@
 <p>Current count: @_currentCount</p>
 
 <button class="btn btn-primary" @onclick="@IncrementCountAsync">Start Counting</button>
+<button class="btn btn-danger" @onclick="@ResetCountAsync">Reset Count</button>
+
 
 <h2>Messages</h2>
 
@@ -49,6 +51,11 @@
     public Task IncrementCountAsync()
     {
         return _connection.SendAsync(HubEvents.Count);
+    }
+
+    public Task ResetCountAsync()
+    {
+        return _connection.SendAsync(HubEvents.Reset);
     }
 
     private void AddChatMessage(string fullMessage)

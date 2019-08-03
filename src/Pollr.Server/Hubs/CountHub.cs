@@ -28,5 +28,13 @@ namespace Pollr.Server.Hubs
 
             return Clients.All.SendAsync(HubEvents.Count, newCount);
         }
+
+        [HubMethodName(HubEvents.Reset)]
+        public Task Reset()
+        {
+            var newCount = _stateManager.ResetCount();
+
+            return Clients.All.SendAsync(HubEvents.Count, newCount);
+        }
     }
 }

@@ -13,5 +13,10 @@
         {
             return ++_count;
         }
+
+        public int ResetCount()
+        {
+            return _count = 0;
+        }
     }
 }

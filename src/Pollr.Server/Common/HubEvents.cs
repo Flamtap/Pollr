@@ -4,5 +4,6 @@
     {
         public const string UserJoined = nameof(UserJoined);
         public const string Count = nameof(Count);
+        public const string Reset = nameof(Reset);
     }
 }
