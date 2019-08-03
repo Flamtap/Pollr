@@ -1,5 +1,59 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Pollr.Server.Common
 
-<h1>Hello, world!</h1>
+<h1>Counter</h1>
 
-Welcome to your new app.
+<p>Current count: @_currentCount</p>
+
+<button class="btn btn-primary" @onclick="@IncrementCountAsync">Start Counting</button>
+
+<h2>Messages</h2>
+
+<ul>
+    @foreach (var message in Messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@functions
+{
+    private HubConnection _connection;
+    private int _currentCount;
+
+    private List<string> Messages { get; } = new List<string>();
+
+    protected override async void OnInit()
+    {
+        _connection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:44389/count")
+            .Build();
+
+        _connection.On<string>(HubMethods.UserJoined, username =>
+        {
+            AddChatMessage($@"{username} has joined");
+            StateHasChanged();
+        });
+
+        _connection.On<string>(HubMethods.Increment, username =>
+        {
+            AddChatMessage($@"{username} incremented from {_currentCount} to {_currentCount + 1}");
+            _currentCount++;
+            StateHasChanged();
+        });
+
+        await _connection.StartAsync();
+    }
+
+    public Task IncrementCountAsync()
+    {
+        return _connection.SendAsync(HubMethods.Increment);
+    }
+
+    private void AddChatMessage(string fullMessage)
+    {
+        Messages.Add(fullMessage);
+    }
+
+}
