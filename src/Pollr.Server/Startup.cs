@@ -1,5 +1,7 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,8 @@ namespace Pollr.Server
 
         public IConfiguration Configuration { get; }
 
+        public string HostUrl { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -27,13 +31,17 @@ namespace Pollr.Server
             services.AddServerSideBlazor();
             services.AddSignalR();
 
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddSingleton<CountManager>();
             services.AddSingleton<PollManager>();
 
             services.AddTransient(svc =>
             {
+                var baseUrl = svc.GetService<IHttpContextAccessor>().HttpContext.Request.Host;
+
                 var connection = new HubConnectionBuilder()
-                    .WithUrl("https://localhost:44389/count")
+                    .WithUrl($"https://{baseUrl}/count")
                     .WithAutomaticReconnect()
                     .Build();
 
@@ -42,8 +50,10 @@ namespace Pollr.Server
 
             services.AddTransient(svc =>
             {
+                var baseUrl = svc.GetService<IHttpContextAccessor>().HttpContext.Request.Host;
+
                 var connection = new HubConnectionBuilder()
-                    .WithUrl("https://localhost:44389/poll")
+                    .WithUrl($"https://{baseUrl}/poll")
                     .WithAutomaticReconnect()
                     .Build();
 
