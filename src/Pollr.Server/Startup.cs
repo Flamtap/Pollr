@@ -41,7 +41,7 @@ namespace Pollr.Server
                 var baseUrl = svc.GetService<IHttpContextAccessor>().HttpContext.Request.Host;
 
                 var connection = new HubConnectionBuilder()
-                    .WithUrl($"https://{baseUrl}/count")
+                    .WithUrl($"https://{baseUrl}/counthub")
                     .WithAutomaticReconnect()
                     .Build();
 
@@ -53,7 +53,7 @@ namespace Pollr.Server
                 var baseUrl = svc.GetService<IHttpContextAccessor>().HttpContext.Request.Host;
 
                 var connection = new HubConnectionBuilder()
-                    .WithUrl($"https://{baseUrl}/poll")
+                    .WithUrl($"https://{baseUrl}/pollhub")
                     .WithAutomaticReconnect()
                     .Build();
 
@@ -84,8 +84,8 @@ namespace Pollr.Server
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
-                endpoints.MapHub<CountHub>("/count");
-                endpoints.MapHub<PollHub>("/poll");
+                endpoints.MapHub<CountHub>("/counthub");
+                endpoints.MapHub<PollHub>("/pollhub");
             });
         }
     }
