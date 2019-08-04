@@ -19,19 +19,25 @@ namespace Pollr.Server.Hubs
         {
             return Task.WhenAll(
                 Clients.Caller.SendAsync(PollHubEvents.Vote, _pollManager.GetVotes()),
-                Clients.All.SendAsync(PollHubEvents.Message, $"{Context.ConnectionId} has joined the party!"));
+                Clients.All.SendAsync(PollHubEvents.Message, $"👋 {Context.ConnectionId} has joined the party!"));
         }
 
         [HubMethodName(PollHubEvents.Vote)]
         public Task Vote(string value)
         {
-            _pollManager.Vote(new Vote(Context.ConnectionId, value));
-
             var votes = _pollManager.GetVotes();
 
+            if (votes.Any(v => v.Voter == Context.ConnectionId))
+            {
+                return Clients.All.SendAsync(PollHubEvents.Message,
+                    $"😡 {Context.ConnectionId} just tried to vote twice!");
+            }
+
+            _pollManager.Vote(new Vote(Context.ConnectionId, value));
+
             return Task.WhenAll(
-                Clients.All.SendAsync(PollHubEvents.Vote, votes),
-                Clients.All.SendAsync(PollHubEvents.Message, $"{Context.ConnectionId} voted for {value}!"));
+                Clients.All.SendAsync(PollHubEvents.Vote, _pollManager.GetVotes()),
+                Clients.All.SendAsync(PollHubEvents.Message, $"📊 {Context.ConnectionId} voted for {value}!"));
         }
 
         [HubMethodName(PollHubEvents.Reset)]
@@ -41,7 +47,7 @@ namespace Pollr.Server.Hubs
 
             return Task.WhenAll(
                 Clients.All.SendAsync(PollHubEvents.Vote, Enumerable.Empty<Vote>()),
-                Clients.All.SendAsync(PollHubEvents.Message, $"{Context.ConnectionId} reset the poll!"));
+                Clients.All.SendAsync(PollHubEvents.Message, $"🔃 {Context.ConnectionId} reset the poll!"));
         }
     }
 }
