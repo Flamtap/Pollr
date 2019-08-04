@@ -2,47 +2,60 @@
 @inject PollHubProxy PollHubProxy;
 @using Pollr.Server.Common
 
-<h1>Poll</h1>
+<div class="container-fluid">
+    <h1>Poll</h1>
 
-<EditForm Model="@_voteModel" OnValidSubmit="@VoteAsync">
-    <DataAnnotationsValidator/>
-    <ValidationSummary/>
+    <div class="row">
+        <EditForm Model="@_voteModel" OnValidSubmit="@VoteAsync">
+            <DataAnnotationsValidator />
 
-    <input type="text" id="name" @bind-Value="@_voteModel.Value"/>
+            <div class="form-group">
+                <label for="value">Value</label>
+                <input id="value" class="form-control" type="text" @bind-Value="@_voteModel.Value" />
+            </div>
 
-    <button class="btn btn-primary" type="submit">Vote</button>
-    <button class="btn btn-danger" type="button" @onclick="@ResetPollAsync">Reset Poll</button>
-</EditForm>
+            <ValidationSummary />
 
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th scope="col">Value</th>
-            <th scope="col">Count</th>
-            <th scope="col">Voters</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var voteGroup in Votes.GroupBy(v => v.Value).OrderByDescending(v => v.Count()))
-        {
-            <tr>
-                <th scope="row">@voteGroup.Key</th>
-                <td>@voteGroup.Count()</td>
-                <td>@string.Join(", ", voteGroup.Select(vg => vg.Voter))</td>
-            </tr>
-        }
-    </tbody>
-</table>
+            <div>
+                <button class="btn btn-primary" type="submit">Vote</button>
+                <button class="btn btn-danger" type="button" @onclick="@ResetPollAsync">Reset Poll</button>
+            </div>
+        </EditForm>
+    </div>
 
+    <div class="row p-4">
+        <div class="col-lg-8">
+            <table class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Value</th>
+                    <th scope="col">Count</th>
+                    <th scope="col">Voters</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var voteGroup in Votes.GroupBy(v => v.Value).OrderByDescending(v => v.Count()))
+                {
+                    <tr>
+                        <th scope="row">@voteGroup.Key</th>
+                        <td>@voteGroup.Count()</td>
+                        <td>@string.Join(", ", voteGroup.Select(vg => vg.Voter))</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
 
-<h2>Messages</h2>
-
-<ul>
-    @foreach (var message in Messages)
-    {
-        <li>@message</li>
-    }
-</ul>
+        <div class="col-sm-4">
+            @foreach (var message in Messages)
+            {
+                <div>
+                    <code>> @message</code>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 @functions
 {
