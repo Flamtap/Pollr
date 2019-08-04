@@ -2,8 +2,9 @@
 @inject PollHubProxy PollHubProxy;
 @using Pollr.Server.Common
 
+<h1>📊 Poll</h1>
+
 <div class="container-fluid">
-    <h1>Poll</h1>
 
     <div class="row">
         <EditForm Model="@_voteModel" OnValidSubmit="@VoteAsync">
