@@ -1,0 +1,82 @@
+﻿@page "/"
+@inject PollHubProxy PollHubProxy;
+@using Pollr.Server.Common
+
+<h1>Poll</h1>
+
+<EditForm Model="@_voteModel" OnValidSubmit="@VoteAsync">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <input type="text" id="name" @bind-Value="@_voteModel.Value"/>
+
+    <button class="btn btn-primary" type="submit">Vote</button>
+    <button class="btn btn-danger" type="button" @onclick="@ResetPollAsync">Reset Poll</button>
+</EditForm>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Value</th>
+            <th scope="col">Count</th>
+            <th scope="col">Voters</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var voteGroup in Votes.GroupBy(v => v.Value).OrderByDescending(v => v.Count()))
+        {
+            <tr>
+                <th scope="row">@voteGroup.Key</th>
+                <td>@voteGroup.Count()</td>
+                <td>@string.Join(", ", voteGroup.Select(vg => vg.Voter))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<h2>Messages</h2>
+
+<ul>
+    @foreach (var message in Messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@functions
+{
+    private IEnumerable<Vote> Votes { get; set; } = Enumerable.Empty<Vote>();
+    private List<string> Messages { get; } = new List<string>();
+
+    private readonly VoteModel _voteModel = new VoteModel();
+
+    protected override Task OnInitAsync()
+    {
+        return PollHubProxy.ConnectAsync(VotesUpdated, MessageReceived);
+    }
+
+    private void VotesUpdated(IEnumerable<Vote> votes)
+    {
+        Votes = votes;
+
+        StateHasChanged();
+    }
+
+    private void MessageReceived(string message)
+    {
+        Messages.Add(message);
+
+        StateHasChanged();
+    }
+
+    public Task VoteAsync()
+    {
+        return PollHubProxy.VoteAsync(_voteModel.Value);
+    }
+
+    public Task ResetPollAsync()
+    {
+        return PollHubProxy.ResetPollAsync();
+    }
+}

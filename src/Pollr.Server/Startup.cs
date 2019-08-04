@@ -12,7 +12,10 @@ namespace Pollr.Server
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration) => Configuration = configuration;
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
         public IConfiguration Configuration { get; }
 
@@ -24,14 +27,28 @@ namespace Pollr.Server
             services.AddServerSideBlazor();
             services.AddSignalR();
 
-            services.AddSingleton<StateManager>();
+            services.AddSingleton<CountManager>();
+            services.AddSingleton<PollManager>();
 
-            services.AddScoped(svc => 
-                new HubConnectionBuilder()
+            services.AddTransient(svc =>
+            {
+                var connection = new HubConnectionBuilder()
                     .WithUrl("https://localhost:44389/count")
                     .WithAutomaticReconnect()
-                    .Build());
-            services.AddScoped<CountHubProxy>();
+                    .Build();
+
+                return new CountHubProxy(connection);
+            });
+
+            services.AddTransient(svc =>
+            {
+                var connection = new HubConnectionBuilder()
+                    .WithUrl("https://localhost:44389/poll")
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                return new PollHubProxy(connection);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,6 +75,7 @@ namespace Pollr.Server
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
                 endpoints.MapHub<CountHub>("/count");
+                endpoints.MapHub<PollHub>("/poll");
             });
         }
     }

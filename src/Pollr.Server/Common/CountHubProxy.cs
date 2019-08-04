@@ -13,24 +13,26 @@ namespace Pollr.Server.Common
             _connection = connection;
         }
 
-        public Task ConnectAsync(
-            Action<int> countCallback,
-            Action<string> messageCallback)
+        public Task ConnectAsync(Action<int> countCallback, Action<string> messageCallback)
         {
-            _connection.On(HubEvents.Count, countCallback);
-            _connection.On(HubEvents.Message, messageCallback);
+
+            if (_connection.State == HubConnectionState.Connected)
+                return Task.CompletedTask;
+
+            _connection.On(CountHubEvents.Count, countCallback);
+            _connection.On(CountHubEvents.Message, messageCallback);
 
             return _connection.StartAsync();
         }
 
         public Task BumpCountAsync()
         {
-            return _connection.SendAsync(HubEvents.Count);
+            return _connection.SendAsync(CountHubEvents.Count);
         }
 
         public Task ResetCountAsync()
         {
-            return _connection.SendAsync(HubEvents.Reset);
+            return _connection.SendAsync(CountHubEvents.Reset);
         }
     }
 }

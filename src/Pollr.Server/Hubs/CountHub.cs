@@ -7,40 +7,40 @@ namespace Pollr.Server.Hubs
 {
     public class CountHub : Hub
     {
-        private readonly StateManager _stateManager;
+        private readonly CountManager _countManager;
 
-        public CountHub(StateManager stateManager)
+        public CountHub(CountManager countManager)
         {
-            _stateManager = stateManager;
+            _countManager = countManager;
         }
 
         public override Task OnConnectedAsync()
         {
             return Task.WhenAll(
-                Clients.Caller.SendAsync(HubEvents.Count, _stateManager.GetCount()),
-                Clients.All.SendAsync(HubEvents.Message, $"{Context.ConnectionId} has joined the party!"));
+                Clients.Caller.SendAsync(CountHubEvents.Count, _countManager.GetCount()),
+                Clients.All.SendAsync(CountHubEvents.Message, $"{Context.ConnectionId} has joined the party!"));
         }
 
-        [HubMethodName(HubEvents.Count)]
+        [HubMethodName(CountHubEvents.Count)]
         public Task Count()
         {
-            var oldCount = _stateManager.GetCount();
-            var newCount = _stateManager.BumpCount();
+            var oldCount = _countManager.GetCount();
+            var newCount = _countManager.BumpCount();
 
             return Task.WhenAll(
-                Clients.All.SendAsync(HubEvents.Count, newCount),
-                Clients.All.SendAsync(HubEvents.Message,
+                Clients.All.SendAsync(CountHubEvents.Count, newCount),
+                Clients.All.SendAsync(CountHubEvents.Message,
                     $"{Context.ConnectionId} incremented the from {oldCount} to {newCount}!"));
         }
 
-        [HubMethodName(HubEvents.Reset)]
+        [HubMethodName(CountHubEvents.Reset)]
         public Task Reset()
         {
-            var newCount = _stateManager.ResetCount();
+            var newCount = _countManager.ResetCount();
 
             return Task.WhenAll(
-                Clients.All.SendAsync(HubEvents.Count, newCount),
-                Clients.All.SendAsync(HubEvents.Message, $"{Context.ConnectionId} reset the count!"));
+                Clients.All.SendAsync(CountHubEvents.Count, newCount),
+                Clients.All.SendAsync(CountHubEvents.Message, $"{Context.ConnectionId} reset the count!"));
         }
     }
 }

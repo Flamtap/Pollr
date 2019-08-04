@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/count"
 @inject CountHubProxy CountHubProxy;
 @using Pollr.Server.Common
 
@@ -25,9 +25,9 @@
 
     private List<string> Messages { get; } = new List<string>();
 
-    protected override async void OnInit()
+    protected override Task OnInitAsync()
     {
-        await CountHubProxy.ConnectAsync(CountUpdated, MessageReceived);
+        return CountHubProxy.ConnectAsync(CountUpdated, MessageReceived);
     }
 
     private void CountUpdated(int count)

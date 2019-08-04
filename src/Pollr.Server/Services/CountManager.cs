@@ -1,6 +1,6 @@
 ﻿namespace Pollr.Server.Services
 {
-    public class StateManager
+    public class CountManager
     {
         private int _count;
 
