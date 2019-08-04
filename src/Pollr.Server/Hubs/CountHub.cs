@@ -5,7 +5,7 @@ using Pollr.Server.Services;
 
 namespace Pollr.Server.Hubs
 {
-    public class CountHub : Hub<ICountHub>
+    public class CountHub : Hub
     {
         private readonly StateManager _stateManager;
 
@@ -14,19 +14,23 @@ namespace Pollr.Server.Hubs
             _stateManager = stateManager;
         }
 
-        public override async Task OnConnectedAsync()
+        public override Task OnConnectedAsync()
         {
-            await Clients.All.UserJoinedAsync(Context.ConnectionId);
-
-            await Clients.Caller.UpdateCountAsync(_stateManager.GetCount());
+            return Task.WhenAll(
+                Clients.Caller.SendAsync(HubEvents.Count, _stateManager.GetCount()),
+                Clients.All.SendAsync(HubEvents.Message, $"{Context.ConnectionId} has joined the party!"));
         }
 
         [HubMethodName(HubEvents.Count)]
         public Task Count()
         {
+            var oldCount = _stateManager.GetCount();
             var newCount = _stateManager.BumpCount();
 
-            return Clients.All.UpdateCountAsync(newCount);
+            return Task.WhenAll(
+                Clients.All.SendAsync(HubEvents.Count, newCount),
+                Clients.All.SendAsync(HubEvents.Message,
+                    $"{Context.ConnectionId} incremented the from {oldCount} to {newCount}!"));
         }
 
         [HubMethodName(HubEvents.Reset)]
@@ -34,7 +38,9 @@ namespace Pollr.Server.Hubs
         {
             var newCount = _stateManager.ResetCount();
 
-            return Clients.All.UpdateCountAsync(newCount);
+            return Task.WhenAll(
+                Clients.All.SendAsync(HubEvents.Count, newCount),
+                Clients.All.SendAsync(HubEvents.Message, $"{Context.ConnectionId} reset the count!"));
         }
     }
 }

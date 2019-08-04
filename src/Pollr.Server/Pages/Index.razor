@@ -1,7 +1,5 @@
 ﻿@page "/"
-@inject HubConnection Connection;
 @inject CountHubProxy CountHubProxy;
-@using Microsoft.AspNetCore.SignalR.Client
 @using Pollr.Server.Common
 
 <h1>Counter</h1>
@@ -29,19 +27,19 @@
 
     protected override async void OnInit()
     {
-        await CountHubProxy.ConnectAsync(UserJoined, CountUpdated);
+        await CountHubProxy.ConnectAsync(CountUpdated, MessageReceived);
     }
 
     private void CountUpdated(int count)
     {
-        Messages.Add($@"The current count is {count}!");
         _currentCount = count;
     }
 
-    private void UserJoined(string username)
+    private void MessageReceived(string message)
     {
-        Messages.Add($@"{username} has joined!");
-        StateHasChanged(); //TODO: Should this really be needed?
+        Messages.Add(message);
+        
+        StateHasChanged();
     }
 
     public Task BumpCountAsync()

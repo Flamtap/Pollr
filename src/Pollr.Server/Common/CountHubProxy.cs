@@ -14,11 +14,11 @@ namespace Pollr.Server.Common
         }
 
         public Task ConnectAsync(
-            Action<string> userJoinedCallback,
-            Action<int> countCallback)
+            Action<int> countCallback,
+            Action<string> messageCallback)
         {
-            _connection.On(HubEvents.UserJoined, userJoinedCallback);
             _connection.On(HubEvents.Count, countCallback);
+            _connection.On(HubEvents.Message, messageCallback);
 
             return _connection.StartAsync();
         }
